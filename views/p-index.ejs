@@ -63,9 +63,9 @@
 					<div class="col-sm-8">
 						<div class="shop-menu pull-right">
 							<ul class="nav navbar-nav">
-								<li><a href="#"><i class="fa fa-user"></i> <%=usrname%></a></li>
-								<li><a href="#"><i class="fa fa-star"></i> Yêu thích</a></li>
-								<li><a href="checkout.html"><i class="fa fa-crosshairs"></i> Thanh toán</a></li>
+								<li><a href="/account"><i class="fa fa-user"></i> <%=usrname%></a></li>
+								<li><a href="/wishlist"><i class="fa fa-star"></i> Yêu thích</a></li>
+								<li><a href="/checkout"><i class="fa fa-crosshairs"></i> Thanh toán</a></li>
 								<li><a href="/cart"><i class="fa fa-shopping-cart"></i> Giỏ hàng</a></li>
 								<li><a href="/logout"><i class="fa fa-shopping-cart"></i> Đăng xuất</a></li>
 							</ul>
@@ -90,7 +90,7 @@
 						<div class="mainmenu pull-left">
 							<ul class="nav navbar-nav collapse navbar-collapse">
 								<li><a href="/" class="active">Trang chủ</a></li>
-								<li class="dropdown"><a href="/category?id=1">Bóng rổ<i class="fa fa-angle-down"></i></a>
+								<li class="dropdown"><a href="/category?id=1&page=1">Bóng rổ<i class="fa fa-angle-down"></i></a>
                                     <ul role="menu" class="sub-menu">
                                         <li><a href="shop.html">Giày</a></li>
 										<li><a href="checkout.html">Áo đấu</a></li> 
@@ -111,6 +111,7 @@
 					<div class="col-sm-3">
 						<div class="search_box pull-right">
 							<form name="searcher" action="/search" method="GET">
+								<input name="page" type="hidden" value="1"/>
 								<input name="keywords" type="text" placeholder="Tìm kiếm" autocomplete="off"/>
 							</form>
 						</div>

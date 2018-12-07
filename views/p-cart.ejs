@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="">
     <meta name="author" content="">
-    <title>Home | Premier Shop</title>
+    <title>Cart | Premier Shop</title>
     <link href="css/bootstrap.min.css" rel="stylesheet">
     <link href="css/font-awesome.min.css" rel="stylesheet">
     <link href="css/prettyPhoto.css" rel="stylesheet">
@@ -109,11 +109,12 @@
 						</div>
 					</div>
 					<div class="col-sm-3">
-						<div class="search_box pull-right">
-							<form name="searcher" action="/search" method="GET">
-								<input name="keywords" type="text" placeholder="Search"/>
-							</form>
-						</div>
+							<div class="search_box pull-right">
+									<form name="searcher" action="/search" method="GET">
+										<input name="page" type="hidden" value="1"/>
+										<input name="keywords" type="text" placeholder="Tìm kiếm" autocomplete="off"/>
+									</form>
+								</div>
 					</div>
 				</div>
 			</div>
@@ -152,10 +153,10 @@
 						result.rows.forEach((p)=>{%>
 							<tr>
 									<td class="cart_product">
-										<a href=""><img height="110px" src=<%=p.image%> alt=""></a>
+										<a href="/product?id=<%=p.productid%>"><img height="110px" src=<%=p.image%> alt=""></a>
 									</td>
 									<td class="cart_description">
-										<h4><a href=""><%=p.productname%></a></h4>
+										<h4><a href="/product?id=<%=p.productid%>"><%=p.productname%></a></h4>
 									</td>
 									<td class="cart_price">
 										<p><%=p.price%>$</p>
@@ -184,74 +185,28 @@
 	<section id="do_action">
 		<div class="container">
 			<div class="heading">
-				<h3>What would you like to do next?</h3>
-				<p>Choose if you have a discount code or reward points you want to use or would like to estimate your delivery cost.</p>
 			</div>
 			<div class="row">
 				<div class="col-sm-6">
-					<div class="chose_area">
-						<ul class="user_option">
-							<li>
-								<input type="checkbox">
-								<label>Use Coupon Code</label>
-							</li>
-							<li>
-								<input type="checkbox">
-								<label>Use Gift Voucher</label>
-							</li>
-							<li>
-								<input type="checkbox">
-								<label>Estimate Shipping & Taxes</label>
-							</li>
-						</ul>
-						<ul class="user_info">
-							<li class="single_field">
-								<label>Country:</label>
-								<select>
-									<option>United States</option>
-									<option>Bangladesh</option>
-									<option>UK</option>
-									<option>India</option>
-									<option>Pakistan</option>
-									<option>Ucrane</option>
-									<option>Canada</option>
-									<option>Dubai</option>
-								</select>
-								
-							</li>
-							<li class="single_field">
-								<label>Region / State:</label>
-								<select>
-									<option>Select</option>
-									<option>Dhaka</option>
-									<option>London</option>
-									<option>Dillih</option>
-									<option>Lahore</option>
-									<option>Alaska</option>
-									<option>Canada</option>
-									<option>Dubai</option>
-								</select>
-							
-							</li>
-							<li class="single_field zip-field">
-								<label>Zip Code:</label>
-								<input type="text">
-							</li>
-						</ul>
-						<a class="btn btn-default update" href="">Get Quotes</a>
-						<a class="btn btn-default check_out" href="">Continue</a>
-					</div>
+					
 				</div>
 				<div class="col-sm-6">
 					<div class="total_area">
-						<ul>
-							<li>Cart Sub Total <span>$59</span></li>
-							<li>Eco Tax <span>$2</span></li>
-							<li>Shipping Cost <span>Free</span></li>
-							<li>Total <span>$61</span></li>
-						</ul>
-							<a class="btn btn-default update" href="">Update</a>
-							<a class="btn btn-default check_out" href="">Check Out</a>
+						<% if(!result.rows[0]){
+						}
+						else{
+							var sum = 0
+							result.rows.forEach((p)=>{
+								sum=sum+p.price*p.amount
+							})%>
+							<ul>
+								<li>Tổng giá trị sản phẩm <span>$<%=sum%></span></li>
+								<li>Phí vận chuyển <span>Free</span></li>
+								<li>Total <span>$<%=sum%></span></li>
+							</ul>
+									<a class="btn btn-default check_out" href="/confirmorder">Check Out</a>
+						<%}%>
+						
 					</div>
 				</div>
 			</div>

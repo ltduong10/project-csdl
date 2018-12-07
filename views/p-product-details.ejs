@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="">
     <meta name="author" content="">
-    <title>Shop | Premier Shop</title>
+    <title><%=prod.productname%> | Premier Shop</title>
     <link href="css/bootstrap.min.css" rel="stylesheet">
     <link href="css/font-awesome.min.css" rel="stylesheet">
     <link href="css/prettyPhoto.css" rel="stylesheet">
@@ -64,7 +64,7 @@
 						<div class="shop-menu pull-right">
 							<ul class="nav navbar-nav">
 								<li><a href="#"><i class="fa fa-user"></i> <%=usrname%></a></li>
-								<li><a href="#"><i class="fa fa-star"></i> Yêu thích</a></li>
+								<li><a href="/wishlist"><i class="fa fa-star"></i> Yêu thích</a></li>
 								<li><a href="checkout.html"><i class="fa fa-crosshairs"></i> Thanh toán</a></li>
 								<li><a href="/cart"><i class="fa fa-shopping-cart"></i> Giỏ hàng</a></li>
 								<li><a href="/logout"><i class="fa fa-shopping-cart"></i> Đăng xuất</a></li>
@@ -109,9 +109,12 @@
 						</div>
 					</div>
 					<div class="col-sm-3">
-						<div class="search_box pull-right">
-							<input type="text" placeholder="Search"/>
-						</div>
+							<div class="search_box pull-right">
+									<form name="searcher" action="/search" method="GET">
+										<input name="page" type="hidden" value="1"/>
+										<input name="keywords" type="text" placeholder="Tìm kiếm" autocomplete="off"/>
+									</form>
+								</div>
 					</div>
 				</div>
 				</div>
@@ -270,24 +273,6 @@
 							<div id="similar-product" class="carousel slide" data-ride="carousel">
 								
 								  <!-- Wrapper for slides -->
-								    <div class="carousel-inner">
-										<div class="item active">
-										  <a href=""><img src="images/product-details/similar1.jpg" alt=""></a>
-										  <a href=""><img src="images/product-details/similar2.jpg" alt=""></a>
-										  <a href=""><img src="images/product-details/similar3.jpg" alt=""></a>
-										</div>
-										<div class="item">
-										  <a href=""><img src="images/product-details/similar1.jpg" alt=""></a>
-										  <a href=""><img src="images/product-details/similar2.jpg" alt=""></a>
-										  <a href=""><img src="images/product-details/similar3.jpg" alt=""></a>
-										</div>
-										<div class="item">
-										  <a href=""><img src="images/product-details/similar1.jpg" alt=""></a>
-										  <a href=""><img src="images/product-details/similar2.jpg" alt=""></a>
-										  <a href=""><img src="images/product-details/similar3.jpg" alt=""></a>
-										</div>
-										
-									</div>
 
 								  <!-- Controls -->
 								  <a class="left item-control" href="#similar-product" data-slide="prev">
@@ -311,9 +296,6 @@
 												Thêm vào giỏ
 											</button>
 									</span>
-									<p><b>Tình trạng:</b> Còn hàng</p>
-									<p><b>Điều khiện</b> Mới</p>
-									<p><b>Hãng:</b> </p>
 									<a href=""><img src="images/product-details/share.png" class="share img-responsive"  alt="" /></a>
 								</div><!--/product-information-->
 							</div>

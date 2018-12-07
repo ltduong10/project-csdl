@@ -15,7 +15,7 @@ app.set('view engine','ejs')
 app.use(flash())
 app.use(bodyParser.urlencoded({extended:true}))
 app.use(session({
-    secret:'thay phuong dep zai',
+    secret:'twice',
     cookie:{
         //maxAge:1000*60*5
     }
@@ -23,7 +23,6 @@ app.use(session({
 app.use(passport.initialize())
 app.use(passport.session())
 app.use(express.static('public'))
-
 var config = {
     user: 'postgres',
     database: 'premiershop',
@@ -36,6 +35,12 @@ var config = {
 
 var pool = new pg.Pool(config)
 
+function checkAdmin(){
+    return (req,res,next)=>{
+        if(req.isAuthenticated() && req.user.username=='duong10') next()
+        else res.redirect('/')
+    }
+}
 app.get('/check',(req,res)=>{
     res.render('checkout')
 })
@@ -97,8 +102,8 @@ app.post('/register',(req,res)=>{
                       req.flash('reg-error','Số điện thoại này đã được sử dụng')
                       res.redirect('/login')
                     } else {
-                        bcrypt.hash(req.body.newpassword, null, null, function(err, hash) {
-                            client.query("INSERT INTO customers(username,password,address,phone,email) VALUES($1,$2,$3,$4,$5)",[req.body.newusername,hash,req.body.address,req.body.phone,req.body.email])
+                        await bcrypt.hash(req.body.newpassword, null, null, function(err, hash) {
+                            client.query("INSERT INTO customers(username,password,address,phone,email,fullname) VALUES($1,$2,$3,$4,$5,$6)",[req.body.newusername,hash,req.body.address,req.body.phone,req.body.email,req.body.fullname])
                           });
                         //await client.query("INSERT INTO customers(username,password,address,phone,email) VALUES($1,$2,$3,$4,$5)",[req.body.newusername,req.body.newpassword,req.body.address,req.body.phone,req.body.email])
                     }
@@ -118,9 +123,10 @@ app.get('/category',(req,res)=>{
         (async () => {
             const client = await pool.connect()
             try {
-              const result = await client.query("SELECT * FROM products WHERE productid IN (SELECT product FROM incategory WHERE category = $1)",[req.query.id])
-              //console.log(res.rows[0])
-              res.render('p-shop',{prod:result,usrname:req.user.username})
+              const checker = await client.query("SELECT COUNT(*) FROM products WHERE productid IN (SELECT product FROM incategory WHERE category = $1)",[req.query.id])
+              const result = await client.query("SELECT * FROM products WHERE productid IN (SELECT product FROM incategory WHERE category = $1) ORDER BY productname DESC LIMIT 6 OFFSET ($2-1)*6",[req.query.id,req.query.page])
+              //console.log(checker.rows[0].count)
+              res.render('p-shop',{prod:result,usrname:req.user.username,length:checker.rows[0].count,cat:req.query.id,peji:req.query.page})
              } finally {
                  client.release()
              }
@@ -128,7 +134,7 @@ app.get('/category',(req,res)=>{
             console.log(e.stack)
         })
     }
-    else res.render('index')
+    else res.redirect('/')
     
 })
 
@@ -137,9 +143,10 @@ app.get('/search',(req,res)=>{
         (async () => {
             const client = await pool.connect()
             try {
-              const result = await client.query("SELECT * FROM products WHERE upper(productname) LIKE '%'||upper($1)||'%'",[req.query.keywords])
-              //console.log(res.rows[0])
-              res.render('p-shop',{prod:result,usrname:req.user.username})
+              const result = await client.query("SELECT * FROM products WHERE upper(productname) LIKE '%'||upper($1)||'%' ORDER BY productname DESC LIMIT 6 OFFSET ($2-1)*6",[req.query.keywords,req.query.page])
+              const result2 = await client.query("SELECT COUNT(products.productid) as count FROM products WHERE upper(productname) LIKE '%'||upper($1)||'%'",[req.query.keywords])
+              console.log(result2.rows[0].count)
+              res.render('p-search',{prod:result,usrname:req.user.username,count:result2.rows[0].count,kw:req.query.keywords,peji:req.query.page})
              } finally {
                  client.release()
              }
@@ -147,7 +154,7 @@ app.get('/search',(req,res)=>{
             console.log(e.stack)
         })
     }
-    else res.render('index')
+    else res.redirect('/')
     
 })
 
@@ -166,7 +173,7 @@ app.get('/product',(req,res)=>{
             console.log(e.stack)
         })
     }
-    else res.render('index')
+    else res.redirect('/')
 })
 
 app.get('/addtocart',(req,res)=>{
@@ -194,7 +201,7 @@ app.get('/addtocart',(req,res)=>{
             console.log(e.stack)
         })
     }
-    else res.render('index')
+    else res.redirect('/')
 })
 
 app.get('/removefromcart',(req,res)=>{
@@ -211,7 +218,7 @@ app.get('/removefromcart',(req,res)=>{
             console.log(e.stack)
         })
     }
-    else res.render('index')
+    else res.redirect('/')
 })
 
 app.get('/cart',(req,res)=>{
@@ -228,7 +235,7 @@ app.get('/cart',(req,res)=>{
             console.log(e.stack)
         })
     }
-    else res.render('index')
+    else res.redirect('/')
 })
 
 app.get('/addtowishlist',(req,res)=>{
@@ -236,8 +243,14 @@ app.get('/addtowishlist',(req,res)=>{
         (async () => {
             const client = await pool.connect()
             try {
-                result = await client.query("SELECT * FROM products INNER JOIN addtocart ON products.productid = addtocart.productid WHERE addtocart.customerid = (SELECT userid FROM customers WHERE username=$1) ORDER BY products.productid DESC",[req.user.username])
-                res.render('p-cart',{prod:result,usrname:req.user.username})
+                result = await client.query("SELECT * FROM addtowishlist WHERE customerid = (SELECT userid FROM customers WHERE username = $1) AND productid = $2",[req.user.username,req.query.id])
+                if(result.rows[0]) {
+                    res.redirect('/wishlist')
+                }
+                else {
+                    await client.query("INSERT INTO addtowishlist(customerid,productid) SELECT userid,productid FROM customers,products WHERE username=$1 AND productid=$2",[req.user.username,req.query.id])
+                    res.redirect('/wishlist')
+                }
              } finally {
                  client.release()
              }
@@ -245,17 +258,17 @@ app.get('/addtowishlist',(req,res)=>{
             console.log(e.stack)
         })
     }
-    else res.render('index')
+    else res.redirect('/')
 })
-
 
 app.get('/wishlist',(req,res)=>{
     if(req.isAuthenticated()){
         (async () => {
             const client = await pool.connect()
             try {
-                result = await client.query("SELECT * FROM products INNER JOIN addtocart ON products.productid = addtocart.productid WHERE addtocart.customerid = (SELECT userid FROM customers WHERE username=$1) ORDER BY products.productid DESC",[req.user.username])
-                res.render('p-cart',{prod:result,usrname:req.user.username})
+                result = await client.query("SELECT * FROM products INNER JOIN addtowishlist ON products.productid = addtowishlist.productid WHERE addtowishlist.customerid = (SELECT userid FROM customers WHERE username=$1) ORDER BY products.productid DESC",[req.user.username])
+                
+                res.render('p-wishlist',{prod:result,usrname:req.user.username})
              } finally {
                  client.release()
              }
@@ -263,11 +276,136 @@ app.get('/wishlist',(req,res)=>{
             console.log(e.stack)
         })
     }
-    else res.render('index')
+    else res.redirect('/')
+})
+
+app.get('/removefromwishlist',(req,res)=>{
+    if(req.isAuthenticated()){
+        (async () => {
+            const client = await pool.connect()
+            try {
+                await client.query("DELETE FROM addtowishlist WHERE customerid = (SELECT userid FROM customers WHERE username = $1) AND productid = $2",[req.user.username,req.query.id])
+                res.redirect('/wishlist')
+             } finally {
+                 client.release()
+             }
+        })().catch(e =>{
+            console.log(e.stack)
+        })
+    }
+    else res.render('/')
+})
+
+app.get('/account',(req,res)=>{
+    if(req.isAuthenticated()){
+        (async () => {
+            const client = await pool.connect()
+            try {
+                result = await client.query("SELECT * FROM customers WHERE username = $1",[req.user.username])
+                res.render('p-account',{result:result.rows[0],usrname:req.user.username,message:req.flash('update-confirm'),message2:req.flash('change-flash')})
+             } finally {
+                 client.release()
+             }
+        })().catch(e =>{
+            console.log(e.stack)
+        })
+    }
+    else res.redirect('/')
+})
+
+app.post('/updateinfo',(req,res)=>{
+    if(req.isAuthenticated()){
+        (async () =>{
+            const client = await pool.connect()
+            try{
+                result = await client.query("UPDATE customers SET address=$1,phone=$2,email=$3,fullname=$4 WHERE username=$5",[req.body.address,req.body.phone,req.body.email,req.body.fullname,req.user.username])
+                req.flash('update-confirm','Cập nhật thành công')
+                res.redirect('/account')
+            } finally {
+                client.release()
+            }
+        })().catch(e=>{
+            console.log(e.stack)
+        })
+    }
+    else res.redirect('/')
+})
+
+app.post('/changepass',(req,res)=>{
+    if(req.isAuthenticated()){
+        (async ()=>{
+            const client = await pool.connect()
+            try{
+                result = await client.query("SELECT * FROM customers WHERE username = $1",[req.user.username])
+                await bcrypt.compare(req.body.oldpass,result.rows[0].password,(err,reslt)=>{
+                    if(reslt){
+                        if(req.body.newpass == req.body.newpassagain){
+                            bcrypt.hash(req.body.newpass, null, null, function(err, hash) {
+                                client.query("UPDATE customers SET password = $1 WHERE username = $2",[hash,req.user.username])
+                                req.flash('change-flash','Thay đổi thành công')
+                                res.redirect('/account')
+                              })
+                        }
+                        else{
+                            req.flash('change-flash','Mật khẩu nhập lại không khớp')
+                            res.redirect('/account')
+                        }
+                    }
+                    else {
+                        req.flash('change-flash','Mật khẩu sai')
+                        res.redirect('/account')
+                    }
+                })
+            } finally {
+                client.release()
+            }
+        })().catch(e=>{
+            console.log(e.stack)
+        })
+    }
+    else res.redirect('/')
 })
 
 app.get('/checkout',(req,res)=>{
-    res.render('checkout')
+    if(req.isAuthenticated()){
+        (async () => {
+            const client = await pool.connect()
+            try {
+                
+             } finally {
+                 client.release()
+             }
+        })().catch(e =>{
+            console.log(e.stack)
+        })
+    }
+    else res.redirect('/')
+})
+
+app.get('/tesuto',checkAdmin(),(req,res)=>{
+    res.render('../public/admin/index')
+})
+app.get('/confirmorder',(req,res)=>{
+    if(req.isAuthenticated()){
+        (async () => {
+            const client = await pool.connect()
+            try {
+                await client.query("INSERT INTO orders(customerid,orderdate,orderstatus) SELECT userid,LOCALTIMESTAMP,'new' FROM customers WHERE username = $1",[req.user.username])
+                await client.query("INSERT INTO orderdetails SELECT orderid,productid,amount FROM orders,addtocart WHERE orders.customerid = addtocart.customerid AND orders.customerid = (SELECT userid FROM customers WHERE username = $1) AND orderid = (SELECT orderid FROM orders WHERE customerid = (SELECT userid FROM customers WHERE username = $1) ORDER BY orderdate DESC LIMIT 1)",[req.user.username])
+                await client.query("DELETE FROM addtocart WHERE customerid = (SELECT userid FROM customers WHERE username = $1)",[req.user.username])
+                res.redirect('/cart')
+             } finally {
+                 client.release()
+             }
+        })().catch(e =>{
+            console.log(e.stack)
+        })
+    }
+    else res.redirect('/')
+})
+
+app.get('*',(req,res)=>{
+    res.render('404')
 })
 
 passport.use(new LocalStrategy(

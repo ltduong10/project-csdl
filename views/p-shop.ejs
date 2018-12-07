@@ -64,7 +64,7 @@
 						<div class="shop-menu pull-right">
 							<ul class="nav navbar-nav">
 								<li><a href="#"><i class="fa fa-user"></i> <%=usrname%></a></li>
-								<li><a href="#"><i class="fa fa-star"></i> Yêu thích</a></li>
+								<li><a href="/wishlist"><i class="fa fa-star"></i> Yêu thích</a></li>
 								<li><a href="checkout.html"><i class="fa fa-crosshairs"></i> Thanh toán</a></li>
 								<li><a href="/cart"><i class="fa fa-shopping-cart"></i> Giỏ hàng</a></li>
 								<li><a href="/logout"><i class="fa fa-shopping-cart"></i> Đăng xuất</a></li>
@@ -109,9 +109,12 @@
 						</div>
 					</div>
 					<div class="col-sm-3">
-						<div class="search_box pull-right">
-							<input type="text" placeholder="Search"/>
-						</div>
+							<div class="search_box pull-right">
+									<form name="searcher" action="/search" method="GET">
+										<input name="page" type="hidden" value="1"/>
+										<input name="keywords" type="text" placeholder="Tìm kiếm" autocomplete="off"/>
+									</form>
+								</div>
 					</div>
 				</div>
 				</div>
@@ -211,7 +214,7 @@
 								</div>
 								<div class="choose">
 									<ul class="nav nav-pills nav-justified">
-										<li><a href=""><i class="fa fa-plus-square"></i>Add to wishlist</a></li>
+										<li><a href="/addtowishlist?id=<%=p.productid%>"><i class="fa fa-plus-square"></i>Add to wishlist</a></li>
 										<li><a href=""><i class="fa fa-plus-square"></i>Add to compare</a></li>
 									</ul>
 								</div>
@@ -219,12 +222,20 @@
 						</div>
 						<%})%>
 					</div><!--features_items-->
+					<% if(length>6){%>
 					<ul class="pagination">
-						<li class="active"><a href="">1</a></li>
-						<li><a href="">2</a></li>
-						<li><a href="">3</a></li>
-						<li><a href="">&raquo;</a></li>
+						<% for(var i=1;i<=length/6;i++){%>
+							<% if(peji==i){%>
+							<li class="active"><a href="/category?id=<%=cat%>&page=<%=i%>"><%=i%></a></li>
+							<%}else{%>
+								<li><a href="/category?id=<%=cat%>&page=<%=i%>"><%=i%></a></li>
+							<%}%>
+						<%}%>
+						<% if(peji!=length){%>
+						<li><a href="/category?id=<%=cat%>&page=<%=parseInt(peji)+1%>">&raquo;</a></li>
+						<%}%>
 					</ul>
+				<%}%>
 				</div>
 			</div>
 		</div>
