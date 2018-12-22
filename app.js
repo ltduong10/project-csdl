@@ -52,21 +52,6 @@ app.get('/',(req,res)=>{
     else res.render('index')
 })
 
-/*app.get('/supreme',(req,res)=>{
-    if(req.isAuthenticated()){
-        (async () => {
-            const client = await pool.connect()
-            try {
-              const result = await client.query('SELECT * FROM product')
-              console.log(result.rows[0].name)
-              res.render('list',{product:result})
-            } finally {
-              client.release()
-            }
-        })().catch(e => console.log(e.stack))
-    }
-})*/
-
 app.route('/login')
 .get((req,res)=>{
     if(req.isAuthenticated()) res.redirect('/')
@@ -227,7 +212,7 @@ app.get('/cart',(req,res)=>{
             const client = await pool.connect()
             try {
                 result = await client.query("SELECT * FROM products INNER JOIN addtocart ON products.productid = addtocart.productid WHERE addtocart.customerid = (SELECT userid FROM customers WHERE username=$1) ORDER BY products.productid DESC",[req.user.username])
-                res.render('p-cart',{prod:result,usrname:req.user.username})
+                res.render('p-cart',{prod:result,usrname:req.user.username,furasshu:req.flash('checkout-done')})
              } finally {
                  client.release()
              }
@@ -366,12 +351,16 @@ app.post('/changepass',(req,res)=>{
     else res.redirect('/')
 })
 
-app.get('/checkout',(req,res)=>{
+app.get('/confirmorder',(req,res)=>{
     if(req.isAuthenticated()){
         (async () => {
             const client = await pool.connect()
             try {
-                
+                await client.query("INSERT INTO orders(customerid,orderdate,orderstatus) SELECT userid,LOCALTIMESTAMP,'new' FROM customers WHERE username = $1",[req.user.username])
+                await client.query("INSERT INTO orderdetails SELECT orderid,productid,amount FROM orders,addtocart WHERE orders.customerid = addtocart.customerid AND orders.customerid = (SELECT userid FROM customers WHERE username = $1) AND orderid = (SELECT orderid FROM orders WHERE customerid = (SELECT userid FROM customers WHERE username = $1) ORDER BY orderdate DESC LIMIT 1)",[req.user.username])
+                await client.query("DELETE FROM addtocart WHERE customerid = (SELECT userid FROM customers WHERE username = $1)",[req.user.username])
+                await req.flash('checkout-done','done')
+                res.redirect('/cart')
              } finally {
                  client.release()
              }
@@ -382,26 +371,57 @@ app.get('/checkout',(req,res)=>{
     else res.redirect('/')
 })
 
-app.get('/tesuto',checkAdmin(),(req,res)=>{
-    res.render('../public/admin/index')
+app.get('/admin/orderlist',checkAdmin(),(req,res)=>{
+    (async () => {
+        const client = await pool.connect()
+        try {
+            result = await client.query("SELECT * FROM orders INNER JOIN customers ON orders.customerid = customers.userid")
+            res.render('../public/admin/data-table',{result:result})
+         } finally {
+             client.release()
+         }
+    })().catch(e =>{
+        console.log(e.stack)
+    })
 })
-app.get('/confirmorder',(req,res)=>{
-    if(req.isAuthenticated()){
-        (async () => {
-            const client = await pool.connect()
-            try {
-                await client.query("INSERT INTO orders(customerid,orderdate,orderstatus) SELECT userid,LOCALTIMESTAMP,'new' FROM customers WHERE username = $1",[req.user.username])
-                await client.query("INSERT INTO orderdetails SELECT orderid,productid,amount FROM orders,addtocart WHERE orders.customerid = addtocart.customerid AND orders.customerid = (SELECT userid FROM customers WHERE username = $1) AND orderid = (SELECT orderid FROM orders WHERE customerid = (SELECT userid FROM customers WHERE username = $1) ORDER BY orderdate DESC LIMIT 1)",[req.user.username])
-                await client.query("DELETE FROM addtocart WHERE customerid = (SELECT userid FROM customers WHERE username = $1)",[req.user.username])
-                res.redirect('/cart')
-             } finally {
-                 client.release()
-             }
-        })().catch(e =>{
-            console.log(e.stack)
-        })
-    }
-    else res.redirect('/')
+app.get('/admin/confirmorder',checkAdmin(),(req,res)=>{
+    (async () => {
+        const client = await pool.connect()
+        try {
+            await client.query("UPDATE orders SET orderstatus = 'completed' WHERE orderid = $1",[req.query.id])
+            res.redirect('/admin/orderlist')
+         } finally {
+             client.release()
+         }
+    })().catch(e =>{
+        console.log(e.stack)
+    })
+})
+app.get('/admin/confirmorder',checkAdmin(),(req,res)=>{
+    (async () => {
+        const client = await pool.connect()
+        try {
+            await client.query("UPDATE orders SET orderstatus = 'completed' WHERE orderid = $1",[req.query.id])
+            res.redirect('/admin/orderlist')
+         } finally {
+             client.release()
+         }
+    })().catch(e =>{
+        console.log(e.stack)
+    })
+})
+app.get('/admin/cancelorder',checkAdmin(),(req,res)=>{
+    (async () => {
+        const client = await pool.connect()
+        try {
+            await client.query("UPDATE orders SET orderstatus = 'incomplete' WHERE orderid = $1",[req.query.id])
+            res.redirect('/admin/orderlist')
+         } finally {
+             client.release()
+         }
+    })().catch(e =>{
+        console.log(e.stack)
+    })
 })
 
 app.get('*',(req,res)=>{

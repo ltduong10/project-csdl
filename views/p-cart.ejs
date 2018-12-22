@@ -21,7 +21,25 @@
     <link rel="apple-touch-icon-precomposed" sizes="144x144" href="images/ico/apple-touch-icon-144-precomposed.png">
     <link rel="apple-touch-icon-precomposed" sizes="114x114" href="images/ico/apple-touch-icon-114-precomposed.png">
     <link rel="apple-touch-icon-precomposed" sizes="72x72" href="images/ico/apple-touch-icon-72-precomposed.png">
-    <link rel="apple-touch-icon-precomposed" href="images/ico/apple-touch-icon-57-precomposed.png">
+	<link rel="apple-touch-icon-precomposed" href="images/ico/apple-touch-icon-57-precomposed.png">
+	<div id="myModal"  class="modal fade" tabindex="-1" role="dialog">
+			<div class="modal-dialog" role="document">
+			  <div class="modal-content">
+				<div class="modal-header">
+				  <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+				  <h4 class="modal-title">Xác nhận đơn hàng thành công!</h4>
+				</div>
+				<div class="modal-body">
+					<div style="margin-left:25%">
+				  <img src="images/checked.png">
+				  </div>
+				</div>
+				<div class="modal-footer">
+				  <button type="button" class="btn btn-default" data-dismiss="modal">Đóng</button>
+				</div>
+			  </div><!-- /.modal-content -->
+			</div><!-- /.modal-dialog -->
+		  </div><!-- /.modal -->
 </head><!--/head-->
 
 <body>
@@ -51,7 +69,6 @@
 				</div>
 			</div>
 		</div><!--/header_top-->
-		
 		<div class="header-middle"><!--header-middle-->
 			<div class="container">
 				<div class="row">
@@ -66,7 +83,7 @@
 								<li><a href="#"><i class="fa fa-user"></i> <%=usrname%></a></li>
 								<li><a href="#"><i class="fa fa-star"></i> Yêu thích</a></li>
 								<li><a href="checkout.html"><i class="fa fa-crosshairs"></i> Thanh toán</a></li>
-								<li><a href="/cart"><i class="fa fa-shopping-cart"></i> Giỏ hàng</a></li>
+								<li><a href="/cart"><i class="fa fa-shopping-cart"></i> Giỏ hàng </a></li>
 								<li><a href="/logout"><i class="fa fa-shopping-cart"></i> Đăng xuất</a></li>
 							</ul>
 						</div>
@@ -142,7 +159,7 @@
 						</tr>
 					</thead>
 					<tbody>
-						<% if(!result.rows[0]) {
+						<% if(!prod.rows[0]) {
 							%><tr>
 									<td class="cart_product">
 										<p style="margin-top:25px">Chưa có sản phẩm nào trong giỏ</p>
@@ -150,7 +167,7 @@
 								</tr><%
 							
 						} else {
-						result.rows.forEach((p)=>{%>
+						prod.rows.forEach((p)=>{%>
 							<tr>
 									<td class="cart_product">
 										<a href="/product?id=<%=p.productid%>"><img height="110px" src=<%=p.image%> alt=""></a>
@@ -191,7 +208,7 @@
 					
 				</div>
 				<div class="col-sm-6">
-					<div class="total_area">
+					
 						<% if(!result.rows[0]){
 						}
 						else{
@@ -199,15 +216,16 @@
 							result.rows.forEach((p)=>{
 								sum=sum+p.price*p.amount
 							})%>
+							<div class="total_area">
 							<ul>
 								<li>Tổng giá trị sản phẩm <span>$<%=sum%></span></li>
 								<li>Phí vận chuyển <span>Free</span></li>
 								<li>Total <span>$<%=sum%></span></li>
 							</ul>
 									<a class="btn btn-default check_out" href="/confirmorder">Check Out</a>
+							</div>
 						<%}%>
 						
-					</div>
 				</div>
 			</div>
 		</div>
@@ -370,13 +388,17 @@
 		</div>
 		
 	</footer><!--/Footer-->
-	
-
-
     <script src="js/jquery.js"></script>
 	<script src="js/bootstrap.min.js"></script>
 	<script src="js/jquery.scrollUp.min.js"></script>
     <script src="js/jquery.prettyPhoto.js"></script>
-    <script src="js/main.js"></script>
+	<script src="js/main.js"></script>
+	<script type="text/javascript">
+	<%if(furasshu == 'done'){%>
+		$(window).on('load',function(){
+			$('#myModal').modal('show')
+		});
+	<%}%>
+	</script>
 </body>
 </html>
