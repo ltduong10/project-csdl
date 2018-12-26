@@ -6,7 +6,7 @@ const LocalStrategy = require('passport-local').Strategy
 const pg = require('pg')
 const flash = require('connect-flash')
 const bcrypt = require('bcrypt-nodejs')
-
+const moment = require('moment')
 const app = express()
 
 app.set('views','./views')
@@ -49,7 +49,7 @@ app.get('/',(req,res)=>{
     if(req.isAuthenticated()){
         res.render('p-index',{usrname:req.user.username})
     }
-    else res.render('index')
+    else res.render('index',{registersuccess:req.flash('reg-success')})
 })
 
 app.route('/login')
@@ -97,7 +97,8 @@ app.post('/register',(req,res)=>{
         } finally {
              client.release()
          }
-         res.render('register')
+         req.flash('reg-success','done')
+         res.redirect('/')
     })().catch(e =>{
         console.log(e.stack)
     })
@@ -109,7 +110,7 @@ app.get('/category',(req,res)=>{
             const client = await pool.connect()
             try {
               const checker = await client.query("SELECT COUNT(*) FROM products WHERE productid IN (SELECT product FROM incategory WHERE category = $1)",[req.query.id])
-              const result = await client.query("SELECT * FROM products WHERE productid IN (SELECT product FROM incategory WHERE category = $1) ORDER BY productname DESC LIMIT 6 OFFSET ($2-1)*6",[req.query.id,req.query.page])
+              const result = await client.query("SELECT * FROM products WHERE productid IN (SELECT product FROM incategory WHERE category = $1) ORDER BY productname DESC LIMIT 8 OFFSET ($2-1)*8",[req.query.id,req.query.page])
               //console.log(checker.rows[0].count)
               res.render('p-shop',{prod:result,usrname:req.user.username,length:checker.rows[0].count,cat:req.query.id,peji:req.query.page})
              } finally {
@@ -128,7 +129,7 @@ app.get('/search',(req,res)=>{
         (async () => {
             const client = await pool.connect()
             try {
-              const result = await client.query("SELECT * FROM products WHERE upper(productname) LIKE '%'||upper($1)||'%' ORDER BY productname DESC LIMIT 6 OFFSET ($2-1)*6",[req.query.keywords,req.query.page])
+              const result = await client.query("SELECT * FROM products WHERE upper(productname) LIKE '%'||upper($1)||'%' ORDER BY productname DESC LIMIT 8 OFFSET ($2-1)*8",[req.query.keywords,req.query.page])
               const result2 = await client.query("SELECT COUNT(products.productid) as count FROM products WHERE upper(productname) LIKE '%'||upper($1)||'%'",[req.query.keywords])
               console.log(result2.rows[0].count)
               res.render('p-search',{prod:result,usrname:req.user.username,count:result2.rows[0].count,kw:req.query.keywords,peji:req.query.page})
@@ -149,8 +150,10 @@ app.get('/product',(req,res)=>{
             const client = await pool.connect()
             try {
               const result = await client.query("SELECT * FROM products WHERE productid =$1",[req.query.id])
+              result1 = await client.query("SELECT * FROM producttags WHERE productid = $1",[req.query.id])
+              result2 = await client.query("SELECT * FROM commenting,customers WHERE commenting.customerid = customers.userid AND productid = $1 ORDER BY commentid DESC",[req.query.id])
               //console.log(res.rows[0])
-              res.render('p-product-details',{prod:result.rows[0],usrname:req.user.username})
+              res.render('p-product-details',{prod:result.rows[0],usrname:req.user.username,tags:result1,reviews:result2,moment:moment})
              } finally {
                  client.release()
              }
@@ -371,12 +374,51 @@ app.get('/confirmorder',(req,res)=>{
     else res.redirect('/')
 })
 
+app.get('/orderlist',(req,res)=>{
+    if(req.isAuthenticated()){
+        (async () => {
+            const client = await pool.connect()
+            try {
+                result = await client.query("SELECT * FROM orders WHERE customerid = (SELECT userid FROM customers WHERE username = $1)",[req.user.username])
+                res.render('p-orderlist',{prod:result,usrname:req.user.username,moment:moment})
+             } finally {
+                 client.release()
+             }
+        })().catch(e =>{
+            console.log(e.stack)
+        })
+    }
+    else res.redirect('/')
+})
+
+app.post('/comment',(req,res)=>{
+    if(req.isAuthenticated()){
+        (async () => {
+            const client = await pool.connect()
+            try {
+                result = await client.query("SELECT * FROM customers WHERE username = $1",[req.user.username])
+                await client.query("INSERT INTO commenting(productid,customerid,cmt,cmttime) VALUES($1,$2,$3,LOCALTIMESTAMP)",[req.body.productid,result.rows[0].userid,req.body.comment])
+                res.redirect('/product?id='+req.body.productid)
+             } finally {
+                 client.release()
+             }
+        })().catch(e =>{
+            console.log(e.stack)
+        })
+    }
+    else res.redirect('/')
+})
+
+app.get('/admin',checkAdmin(),(req,res)=>{
+    res.render('../public/admin/index')
+})
+
 app.get('/admin/orderlist',checkAdmin(),(req,res)=>{
     (async () => {
         const client = await pool.connect()
         try {
             result = await client.query("SELECT * FROM orders INNER JOIN customers ON orders.customerid = customers.userid")
-            res.render('../public/admin/data-table',{result:result})
+            res.render('../public/admin/data-table',{result:result,moment:moment})
          } finally {
              client.release()
          }
@@ -384,12 +426,13 @@ app.get('/admin/orderlist',checkAdmin(),(req,res)=>{
         console.log(e.stack)
     })
 })
-app.get('/admin/confirmorder',checkAdmin(),(req,res)=>{
+
+app.get('/admin/customers',checkAdmin(),(req,res)=>{
     (async () => {
         const client = await pool.connect()
         try {
-            await client.query("UPDATE orders SET orderstatus = 'completed' WHERE orderid = $1",[req.query.id])
-            res.redirect('/admin/orderlist')
+            result = await client.query("SELECT * FROM customers")
+            res.render('../public/admin/customerlist',{result:result})
          } finally {
              client.release()
          }
@@ -397,6 +440,80 @@ app.get('/admin/confirmorder',checkAdmin(),(req,res)=>{
         console.log(e.stack)
     })
 })
+
+app.get('/admin/productlist',checkAdmin(),(req,res)=>{
+    (async () => {
+        const client = await pool.connect()
+        try {
+            result = await client.query("SELECT * FROM products")
+            res.render('../public/admin/productlist',{result:result})
+         } finally {
+             client.release()
+         }
+    })().catch(e =>{
+        console.log(e.stack)
+    })
+})
+
+app.get('/admin/categorylist',checkAdmin(),(req,res)=>{
+    (async () => {
+        const client = await pool.connect()
+        try {
+            result = await client.query("SELECT * FROM categories")
+            res.render('../public/admin/categorylist',{result:result})
+         } finally {
+             client.release()
+         }
+    })().catch(e =>{
+        console.log(e.stack)
+    })
+})
+
+app.get('/admin/incategory',checkAdmin(),(req,res)=>{
+    (async () => {
+        const client = await pool.connect()
+        try {
+            result = await client.query("SELECT products.productid,products.productname,categories.categoryid,categories.categoryname FROM categories,products,incategory WHERE categories.categoryid=incategory.category AND products.productid=incategory.product")
+            res.render('../public/admin/incategory',{result:result})
+         } finally {
+             client.release()
+         }
+    })().catch(e =>{
+        console.log(e.stack)
+    })
+})
+
+app.route('/admin/addtag')
+.get(checkAdmin(),(req,res)=>{
+    res.render('../public/admin/add-tag-form',{message:req.flash('addtag'),messageerror:req.flash('err')})
+})
+.post(checkAdmin(),(req,res)=>{
+    (async ()=>{
+        const client = await pool.connect()
+        try{
+            result = await client.query("SELECT productname FROM products WHERE productid=$1",[req.body.productid])
+            if(result.rows[0]){
+                result = await client.query("SELECT * FROM producttags WHERE productid = $1 AND tag = $2",[req.body.productid,req.body.tag])
+                if(result.rows[0]){
+                    req.flash('err','Sản phẩm đã có tag này')
+                }
+                else{
+                    await client.query("INSERT INTO producttags VALUES($1,$2)",[req.body.productid,req.body.tag])
+                    req.flash('addtag','Thêm tag sản phẩm thành công!')
+                }
+            }
+            else{
+                req.flash('err','Không tồn tại sản phẩm')
+            }
+            res.redirect('/admin/addtag')
+        } finally{
+            client.release()
+        }
+    })().catch(e =>{
+        console.log(e.stack)
+    })
+})
+
 app.get('/admin/confirmorder',checkAdmin(),(req,res)=>{
     (async () => {
         const client = await pool.connect()
@@ -420,6 +537,77 @@ app.get('/admin/cancelorder',checkAdmin(),(req,res)=>{
              client.release()
          }
     })().catch(e =>{
+        console.log(e.stack)
+    })
+})
+
+app.get('/admin/addInfoProduct',checkAdmin(),(req,res)=>{
+    res.render('../public/admin/form-examples',{message:req.flash('addprod'),messageerror:req.flash('err'),messageerror2:req.flash('err-2')})
+})
+app.post('/admin/addproduct',checkAdmin(),(req,res)=>{
+    (async ()=>{
+        const client = await pool.connect()
+        try{
+            result = await client.query("SELECT productname FROM products WHERE productname=$1",[req.body.productname])
+            if(!result.rows[0]){
+                await client.query("INSERT INTO products(productname,price,image,description) VALUES($1,$2,'./images/products/'||$3,$4)",[req.body.productname,req.body.price,req.body.image,req.body.description])
+                req.flash('addprod','Thêm sản phẩm thành công!')
+            }
+            else{
+                req.flash('err','Tên sản phẩm bị trùng')
+            }
+            res.redirect('/admin/addInfoProduct')
+        } finally{
+            client.release()
+        }
+    })().catch(e =>{
+        console.log(e.stack)
+    })
+})
+
+app.post('/admin/addincategory',checkAdmin(),(req,res)=>{
+    (async ()=>{
+        const client = await pool.connect()
+        try{
+            result = await client.query("SELECT * FROM products WHERE productid=$1",[req.body.prodid])
+            if(!result.rows[0]){
+                req.flash('err-2','Không tồn tại sản phẩm')
+            }
+            else{
+                result1 = await client.query("SELECT * FROM categories WHERE categoryid=$1",[req.body.catid])
+                if(!result1.rows[0]){
+                    req.flash('err-2','Không tồn tại danh mục')
+                }
+                else{
+                    result2 = await client.query("SELECT * FROM incategory WHERE product = $1 AND category = $2",[req.body.prodid,req.body.catid])
+                    if(result2.rows[0]){
+                        req.flash('err-2','Sản phẩm đã nằm trong danh mục')
+                    }
+                    else{
+                        await client.query("INSERT INTO incategory VALUES($1,$2)",[req.body.prodid,req.body.catid])
+                    req.flash('addprod','Đưa sản phẩm vào danh mục thành công')
+                    }
+                }
+            }
+            res.redirect('/admin/addInfoProduct')
+        } finally{
+            client.release()
+        }
+    })().catch(e =>{
+        console.log(e.stack)
+    })
+})
+
+app.get('/admin/orderdetails',checkAdmin(),(req,res)=>{
+    (async ()=>{
+        const client = await pool.connect()
+        try{
+            result = await client.query("SELECT DISTINCT products.productid,products.productname,products.price,orderdetails.amount FROM products,orderdetails WHERE orderdetails.orderproductid=products.productid AND orderdetails.orderid=$1",[req.query.id])
+            res.render('../public/admin/data-table2',{result:result})
+        } finally{
+            client.release()
+        }
+    })().catch(e=>{
         console.log(e.stack)
     })
 })

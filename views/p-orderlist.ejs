@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <title>Cart | Premier Shop</title>
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/font-awesome.min.css" rel="stylesheet">
+    <link href="css/prettyPhoto.css" rel="stylesheet">
+    <link href="css/price-range.css" rel="stylesheet">
+    <link href="css/animate.css" rel="stylesheet">
+	<link href="css/main.css" rel="stylesheet">
+	<link href="css/responsive.css" rel="stylesheet">
+    <!--[if lt IE 9]>
+    <script src="js/html5shiv.js"></script>
+    <script src="js/respond.min.js"></script>
+    <![endif]-->       
+    <link rel="shortcut icon" href="images/ico/favicon.ico">
+    <link rel="apple-touch-icon-precomposed" sizes="144x144" href="images/ico/apple-touch-icon-144-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" sizes="114x114" href="images/ico/apple-touch-icon-114-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" sizes="72x72" href="images/ico/apple-touch-icon-72-precomposed.png">
+	<link rel="apple-touch-icon-precomposed" href="images/ico/apple-touch-icon-57-precomposed.png">
+</head><!--/head-->
+
+<body>
+	<header id="header"><!--header-->
+		<%include headertop%>
+
+		<div class="header-middle"><!--header-middle-->
+			<div class="container">
+				<div class="row">
+					<div class="col-sm-4">
+						<div class="logo pull-left">
+							<a href="/"><img width="125px" src="images/home/logo-2.jpg" alt="" /></a>
+						</div>
+					</div>
+					<div class="col-sm-8">
+						<div class="shop-menu pull-right">
+							<ul class="nav navbar-nav">
+								<li><a href="#"><i class="fa fa-user"></i> <%=usrname%></a></li>
+								<li><a href="/wishlist"><i class="fa fa-star"></i> Yêu thích</a></li>
+								<li><a href="/orderlist" class="active"><i class="fa fa-crosshairs"></i> Thanh toán</a></li>
+								<li><a href="/cart"><i class="fa fa-shopping-cart"></i> Giỏ hàng </a></li>
+								<li><a href="/logout"><i class="fa fa-sign-out"></i> Đăng xuất</a></li>
+							</ul>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div><!--/header-middle-->
+	
+		<div class="header-bottom"><!--header-bottom-->
+			<div class="container">
+				<div class="row">
+					<div class="col-sm-9">
+						<div class="navbar-header">
+							<button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+								<span class="sr-only">Toggle navigation</span>
+								<span class="icon-bar"></span>
+								<span class="icon-bar"></span>
+								<span class="icon-bar"></span>
+							</button>
+						</div>
+						<div class="mainmenu pull-left">
+							<ul class="nav navbar-nav collapse navbar-collapse">
+								<li><a href="/" class="active">Trang chủ</a></li>
+								<li class="dropdown"><a href="/category?id=1&page=1">Bóng rổ<i class="fa fa-angle-down"></i></a>
+                                    <ul role="menu" class="sub-menu">
+                                        <li><a href="shop.html">Giày</a></li>
+										<li><a href="checkout.html">Áo đấu</a></li> 
+										<li><a href="cart.html">Phụ kiện khác</a></li> 
+                                    </ul>
+								</li>
+								<li class="dropdown"><a href="/category?id=2&page=1">Bóng đá<i class="fa fa-angle-down"></i></a>
+                                    <ul role="menu" class="sub-menu">
+                                        <li><a href="shop.html">Giày</a></li>
+										<li><a href="checkout.html">Áo đấu</a></li> 
+										<li><a href="cart.html">Phụ kiện khác</a></li> 
+                                    </ul>
+                                </li> 
+								<li><a href="contact-us.html">Về chúng tôi</a></li>
+							</ul>
+						</div>
+					</div>
+					<div class="col-sm-3">
+							<div class="search_box pull-right">
+									<form name="searcher" action="/search" method="GET">
+										<input name="page" type="hidden" value="1"/>
+										<input name="keywords" type="text" placeholder="Tìm kiếm" autocomplete="off"/>
+									</form>
+								</div>
+					</div>
+				</div>
+			</div>
+		</div><!--/header-bottom-->
+	</header><!--/header-->
+
+	<section id="cart_items">
+		<div class="container">
+			<div class="breadcrumbs">
+				<ol class="breadcrumb">
+				  <li><a href="#">Home</a></li>
+				  <li class="active">Danh sách đơn hàng</li>
+				</ol>
+			</div>
+			<div class="table-responsive cart_info">
+				<table class="table table-condensed">
+					<thead>
+						<tr class="cart_menu">
+							<td class="image">ID Đơn hàng</td>
+							<td class="description">Thời gian</td>
+							<td class="price">Trạng thái</td>
+							<td></td>
+						</tr>
+					</thead>
+					<tbody>
+						<% if(!prod.rows[0]) {
+							%><tr>
+									<td class="cart_product">
+										<p style="margin-top:25px">Chưa có đơn hàng nào</p>
+									</td>
+								</tr><%
+							
+						} else {
+						result.rows.forEach((p)=>{%>
+							<tr>
+								<td class="cart_product">
+										<p style="margin-top:25px"><%=p.orderid%></p>
+									</td>
+								<td class="cart_description">
+										<p style="margin-top:25px"><%=moment(p.orderdate).format('MMMM Do YYYY, h:mm:ss a')%></p>
+									</td>
+								<td class="cart_price">
+									<% if(p.orderstatus=='incomplete'){%>
+										<p style="margin-top:25px">Hủy</p>
+										<%}%>
+									<% if(p.orderstatus=='completed'){%>
+										<p style="margin-top:25px">Đã thanh toán</p>
+										<%}%>
+									<% if(p.orderstatus=='new'){%>
+										<p style="margin-top:25px">Đang chờ</p>
+										<%}%>
+									</td>
+								</tr>
+						<%})}%>
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</section> <!--/#cart_items-->
+
+
+	<% include footer %>
+
+    <script src="js/jquery.js"></script>
+	<script src="js/bootstrap.min.js"></script>
+	<script src="js/jquery.scrollUp.min.js"></script>
+    <script src="js/jquery.prettyPhoto.js"></script>
+	<script src="js/main.js"></script>
+</body>
+</html>

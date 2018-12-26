@@ -1,0 +1,290 @@
+<!doctype html>
+<html class="no-js" lang="">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>Form Examples | Notika - Notika Admin Template</title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- favicon
+		============================================ -->
+    <link rel="shortcut icon" type="image/x-icon" href="img/favicon.ico">
+    <!-- Google Fonts
+		============================================ -->
+    <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,700,900" rel="stylesheet">
+    <!-- Bootstrap CSS
+		============================================ -->
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <!-- font awesome CSS
+		============================================ -->
+    <link rel="stylesheet" href="css/font-awesome.min.css">
+    <!-- owl.carousel CSS
+		============================================ -->
+    <link rel="stylesheet" href="css/owl.carousel.css">
+    <link rel="stylesheet" href="css/owl.theme.css">
+    <link rel="stylesheet" href="css/owl.transitions.css">
+    <!-- meanmenu CSS
+		============================================ -->
+    <link rel="stylesheet" href="css/meanmenu/meanmenu.min.css">
+    <!-- animate CSS
+		============================================ -->
+    <link rel="stylesheet" href="css/animate.css">
+    <!-- normalize CSS
+		============================================ -->
+    <link rel="stylesheet" href="css/normalize.css">
+    <!-- mCustomScrollbar CSS
+		============================================ -->
+    <link rel="stylesheet" href="css/scrollbar/jquery.mCustomScrollbar.min.css">
+    <!-- Notika icon CSS
+		============================================ -->
+    <link rel="stylesheet" href="css/notika-custom-icon.css">
+    <!-- wave CSS
+		============================================ -->
+    <link rel="stylesheet" href="css/wave/waves.min.css">
+    <link rel="stylesheet" href="css/wave/button.css">
+    <!-- main CSS
+		============================================ -->
+    <link rel="stylesheet" href="css/main.css">
+    <!-- style CSS
+		============================================ -->
+    <link rel="stylesheet" href="style.css">
+    <!-- responsive CSS
+		============================================ -->
+    <link rel="stylesheet" href="css/responsive.css">
+    <!-- modernizr JS
+		============================================ -->
+    <script src="js/vendor/modernizr-2.8.3.min.js"></script>
+</head>
+
+<body>
+        <div class="modal fade" id="myModal2" role="dialog">
+                <div class="modal-dialog modal-sm">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal">&times;</button>
+                        </div>
+                        <div class="modal-body">
+                            <h1 style="text-align:center"><%=message%></h1>
+                            <div style="margin:15%">
+                                    <img src="img/checked.png">
+                                    </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+    <!--[if lt IE 8]>
+            <p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
+        <![endif]-->
+    <%include headerarea%>
+
+    <!-- Main Menu area start-->
+    <div class="main-menu-area mg-tb-40">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                    <ul class="nav nav-tabs notika-menu-wrap menu-it-icon-pro">
+                        <li><a data-toggle="tab" href="#checkInfo"><i class="notika-icon notika-windows"></i> Xem thông tin</a>
+                        </li>
+                        <li class="active"><a data-toggle="tab" href="#addInfo"><i class="notika-icon notika-form"></i> Thêm thông tin</a>
+                        </li>
+                    </ul>
+                    <div class="tab-content custom-menu-content">
+                        <div id="checkInfo" class="tab-pane notika-tab-menu-bg animated flipInX">
+                            <ul class="notika-main-menu-dropdown">
+                                <li><a href="/admin/orderlist">Đơn hàng</a>
+                                </li>
+                                <li><a href="/admin/customers">Khách hàng</a>
+                                </li>
+                                <li><a href="/admin/productlist">Sản phẩm</a>
+                                </li>
+                                <li><a href="/admin/categorylist">Danh mục</a>
+                                </li>
+                                <li><a href="/admin/incategory">Sản phẩm thuộc danh mục</a>
+                                </li>
+                            </ul>
+                        </div>
+                        <div id="addInfo" class="tab-pane notika-tab-menu-bg in active animated flipInX">
+                                <ul class="notika-main-menu-dropdown">
+                                    <li><a href="/admin/addinfoproduct">Sản phẩm</a>
+                                    </li>
+                                    <li><a href="/admin/addtag">Tag</a>
+                                    </li>
+                                </ul>
+                          </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Main Menu area End-->
+
+    <!-- Form Examples area start-->
+    <div class="form-example-area">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                    <div class="form-example-wrap">
+                        <div class="cmp-tb-hd">
+                            <h2>Thêm sản phẩm</h2>
+                            <p style="color:red"><%=messageerror%></p>
+                        </div>
+                        <form method="POST" action="./addproduct">
+                        <div class="form-example-int">
+                            <div class="form-group">
+                                <label>Tên sản phẩm</label>
+                                <div class="nk-int-st">
+                                    <input type="text" class="form-control input-sm" placeholder="Nhập tên sản phẩm" name="productname" autocomplete="off" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-example-int">
+                                <div class="form-group">
+                                    <label>Giá</label>
+                                    <div class="nk-int-st">
+                                        <input style="font-size:14px" type="number" class="form-control input-sm" placeholder="Nhập giá sản phẩm" name="price" autocomplete="off" required>
+                                    </div>
+                                </div>
+                        </div>
+                        <div class="form-example-int">
+                                <div class="form-group">
+                                    <label>Ảnh</label>
+                                    <div class="nk-int-st">
+                                        <input type="text" class="form-control input-sm" placeholder="Nhập tên ảnh kèm đuôi, vd: image.jpg" name="image" autocomplete="off" required>
+                                    </div>
+                                </div>
+                        </div>
+                        <div class="form-example-int">
+                                <div class="form-group">
+                                    <label>Chi tiết</label>
+                                    <div class="nk-int-st">
+                                        <textarea style="font-size:14px" class="form-control input-sm" placeholder="Nhập description cho sản phẩm" name="description" autocomplete="off" rows="3" required></textarea>
+                                    </div>
+                                </div>
+                        </div>
+                        <div class="form-example-int mg-t-15">
+                            <button class="btn btn-success notika-btn-success">Thêm</button>
+                        </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div style="height:50px"></div>
+    <div class="form-example-area">
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                        <div class="form-example-wrap">
+                            <div class="cmp-tb-hd">
+                                <h2>Cho sản phẩm vào danh mục</h2>
+                                <p style="color:red"><%=messageerror2%></p>
+                            </div>
+                            <form method="POST" action="./addincategory">
+                            <div class="form-example-int">
+                                <div class="form-group">
+                                    <label>ID sản phẩm</label>
+                                    <div class="nk-int-st">
+                                        <input style="font-size:14px" type="number" class="form-control input-sm" placeholder="Nhập ID sản phẩm" name="prodid" autocomplete="off" required>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-example-int">
+                                    <div class="form-group">
+                                        <label>ID danh mục</label>
+                                        <div class="nk-int-st">
+                                            <input style="font-size:14px" type="number" class="form-control input-sm" placeholder="Nhập ID danh mục" name="catid" autocomplete="off" required>
+                                        </div>
+                                    </div>
+                            </div>
+                            <div class="form-example-int mg-t-15">
+                                <button class="btn btn-success notika-btn-success">Thêm</button>
+                            </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    <!-- Form Examples area End-->
+    <!-- Start Footer area-->
+    <%include footer%>
+    <!-- End Footer area-->
+    <!-- jquery
+		============================================ -->
+    <script src="js/vendor/jquery-1.12.4.min.js"></script>
+    <!-- bootstrap JS
+		============================================ -->
+    <script src="js/bootstrap.min.js"></script>
+    <!-- wow JS
+		============================================ -->
+    <script src="js/wow.min.js"></script>
+    <!-- price-slider JS
+		============================================ -->
+    <script src="js/jquery-price-slider.js"></script>
+    <!-- owl.carousel JS
+		============================================ -->
+    <script src="js/owl.carousel.min.js"></script>
+    <!-- scrollUp JS
+		============================================ -->
+    <script src="js/jquery.scrollUp.min.js"></script>
+    <!-- meanmenu JS
+		============================================ -->
+    <script src="js/meanmenu/jquery.meanmenu.js"></script>
+    <!-- counterup JS
+		============================================ -->
+    <script src="js/counterup/jquery.counterup.min.js"></script>
+    <script src="js/counterup/waypoints.min.js"></script>
+    <script src="js/counterup/counterup-active.js"></script>
+    <!-- mCustomScrollbar JS
+		============================================ -->
+    <script src="js/scrollbar/jquery.mCustomScrollbar.concat.min.js"></script>
+    <!-- sparkline JS
+		============================================ -->
+    <script src="js/sparkline/jquery.sparkline.min.js"></script>
+    <script src="js/sparkline/sparkline-active.js"></script>
+    <!-- flot JS
+		============================================ -->
+    <script src="js/flot/jquery.flot.js"></script>
+    <script src="js/flot/jquery.flot.resize.js"></script>
+    <script src="js/flot/flot-active.js"></script>
+    <!-- knob JS
+		============================================ -->
+    <script src="js/knob/jquery.knob.js"></script>
+    <script src="js/knob/jquery.appear.js"></script>
+    <script src="js/knob/knob-active.js"></script>
+    <!-- icheck JS
+		============================================ -->
+    <script src="js/icheck/icheck.min.js"></script>
+    <script src="js/icheck/icheck-active.js"></script>
+    <!--  wave JS
+		============================================ -->
+    <script src="js/wave/waves.min.js"></script>
+    <script src="js/wave/wave-active.js"></script>
+    <!--  Chat JS
+		============================================ -->
+    <script src="js/chat/jquery.chat.js"></script>
+    <!--  todo JS
+		============================================ -->
+    <script src="js/todo/jquery.todo.js"></script>
+    <!-- plugins JS
+		============================================ -->
+    <script src="js/plugins.js"></script>
+    <!-- main JS
+		============================================ -->
+    <script src="js/main.js"></script>
+	<!-- tawk chat JS
+		============================================ -->
+    <script src="js/tawk-chat.js"></script>
+    <script>
+        <% if(message!=0){%>
+            $(window).on('load',function(){
+			$('#myModal2').modal('show')
+        });
+        <%}%>
+    </script>
+</body>
+
+</html>

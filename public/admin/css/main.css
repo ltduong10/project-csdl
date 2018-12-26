@@ -278,3 +278,10 @@ textarea {
         page-break-after: avoid;
     }
 }
+.logo-area{
+    width: 120px;
+}
+.logo-area a{
+    display: block;
+    margin-top: -5px;
+}
