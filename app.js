@@ -104,6 +104,13 @@ app.post('/register',(req,res)=>{
     })
 })
 
+app.get('/about-us',(req,res)=>{
+    if(req.isAuthenticated()){
+        res.render('contact-us',{usrname:req.user.username})
+    }
+    else res.redirect('/')
+})
+
 app.get('/category',(req,res)=>{
     if(req.isAuthenticated()){
         (async () => {
